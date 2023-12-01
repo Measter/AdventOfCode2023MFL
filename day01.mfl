@@ -1,0 +1,241 @@
+import std::mem
+import std::fs
+
+proc entry [] to [] is
+    memory file is std::io::FD end
+    memory input is mem::MMap(u8) end
+
+    "./inputs/day01.txt\0" fs::open_read
+    if xtr(errno) 0 != do
+        "Error opening file: " std::term::ewrite
+        xtrd(errno) std::term::ewrite_ui_ln
+        exit
+    end
+    xtrd(data) file!
+    
+    file@ mem::PROT_READ mem::mmap_file
+    
+    if xtr(errno) 0 != do
+        "Error memmapping file" std::term::ewrite
+        xtrd(errno) std::term::ewrite_ui_ln
+        exit
+    end
+    xtrd(data) input!
+    
+    "Part 1: " std::term::write
+    input@ false part1 std::term::write_ui_ln
+    "Part 2: " std::term::write
+    input@ true part1 std::term::write_ui_ln
+
+    // We'll just assume these succeed, nothing else we can do as
+    // we're exiting
+    input@ mem::free(u8) drop
+    file@ fs::close drop
+end
+
+proc part1 [mem::MMap(u8) bool] to [u16] is
+    memory is_part2 is bool end
+    memory has_left is bool end
+    memory left is u16 end
+    memory right is u16 end
+    
+    is_part2!
+    false has_left!
+
+    0(u16) swap
+    // [sum, data]
+    while xtr(length) 0> do
+        0 xtr if dup '\n'= do
+            drop
+            swap left@ 10* right@+ + swap
+            false has_left!
+        else 
+            if dup '0' >= over '9' <= and do
+                '0'-
+                if has_left@ not do
+                    dup left!
+                    true has_left!
+                end
+                right!
+            elif is_part2@ do
+                drop
+                if dup is_one do
+                    if has_left@ not do
+                        1 left!
+                        true has_left!
+                    end
+                    1 right!
+                elif dup is_two do
+                    if has_left@ not do
+                        2 left!
+                        true has_left!
+                    end
+                    2 right!
+                elif dup is_three do
+                    if has_left@ not do
+                        3 left!
+                        true has_left!
+                    end
+                    3 right!
+                elif dup is_four do
+                    if has_left@ not do
+                        4 left!
+                        true has_left!
+                    end
+                    4 right!
+                elif dup is_five do
+                    if has_left@ not do
+                        5 left!
+                        true has_left!
+                    end
+                    5 right!
+                elif dup is_six do
+                    if has_left@ not do
+                        6 left!
+                        true has_left!
+                    end
+                    6 right!
+                elif dup is_seven do
+                    if has_left@ not do
+                        7 left!
+                        true has_left!
+                    end
+                    7 right!
+                elif dup is_eight do
+                    if has_left@ not do
+                        8 left!
+                        true has_left!
+                    end
+                    8 right!
+                elif dup is_nine do
+                    if has_left@ not do
+                        9 left!
+                        true has_left!
+                    end
+                    9 right!
+                end
+            else drop end
+        end
+
+        unpack
+        1- swap 1+ swap mem::MMap
+    end
+    drop
+end
+
+proc is_one [mem::MMap(u8)] to [bool] is
+    if xtr(length) 3>= do
+        0 xtr 'o' = swap
+        1 xtr 'n' = swap
+        2 xtrd 'e' =
+        and and
+    else
+        drop
+        false
+    end
+end
+
+proc is_two [mem::MMap(u8)] to [bool] is
+    if xtr(length) 3>= do
+        0 xtr 't' = swap
+        1 xtr 'w' = swap
+        2 xtrd 'o' =
+        and and
+    else
+        drop
+        false
+    end
+end
+
+proc is_three [mem::MMap(u8)] to [bool] is
+    if xtr(length) 5>= do
+        0 xtr 't' = swap
+        1 xtr 'h' = swap
+        2 xtr 'r' = swap
+        3 xtr 'e' = swap
+        4 xtrd 'e' =
+        and and and and
+    else
+        drop
+        false
+    end
+end
+
+proc is_four [mem::MMap(u8)] to [bool] is
+    if xtr(length) 4>= do
+        0 xtr 'f' = swap
+        1 xtr 'o' = swap
+        2 xtr 'u' = swap
+        3 xtrd 'r' =
+        and and and
+    else
+        drop
+        false
+    end
+end
+
+proc is_five [mem::MMap(u8)] to [bool] is
+    if xtr(length) 4>= do
+        0 xtr 'f' = swap
+        1 xtr 'i' = swap
+        2 xtr 'v' = swap
+        3 xtrd 'e' =
+        and and and
+    else
+        drop
+        false
+    end
+end
+
+proc is_six [mem::MMap(u8)] to [bool] is
+    if xtr(length) 3>= do
+        0 xtr 's' = swap
+        1 xtr 'i' = swap
+        2 xtrd 'x' =
+        and and
+    else
+        drop
+        false
+    end
+end
+
+proc is_seven [mem::MMap(u8)] to [bool] is
+    if xtr(length) 5>= do
+        0 xtr 's' = swap
+        1 xtr 'e' = swap
+        2 xtr 'v' = swap
+        3 xtr 'e' = swap
+        4 xtrd 'n' =
+        and and and and
+    else
+        drop
+        false
+    end
+end
+
+proc is_eight [mem::MMap(u8)] to [bool] is
+    if xtr(length) 5>= do
+        0 xtr 'e' = swap
+        1 xtr 'i' = swap
+        2 xtr 'g' = swap
+        3 xtr 'h' = swap
+        4 xtrd 't' =
+        and and and and
+    else
+        drop
+        false
+    end
+end
+
+proc is_nine [mem::MMap(u8)] to [bool] is
+    if xtr(length) 9>= do
+        0 xtr 'n' = swap
+        1 xtr 'i' = swap
+        2 xtr 'n' = swap
+        3 xtrd 'e' =
+        and and and
+    else
+        drop
+        false
+    end
+end
