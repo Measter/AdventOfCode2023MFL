@@ -1,0 +1,152 @@
+import std::mem
+import std::fs
+
+proc entry [] to [] is
+    memory file is std::io::FD end
+    memory input is mem::MMap(u8) end
+
+    "./inputs/day02.txt\0" fs::open_read
+    if xtr(errno) 0 != do
+        "Error opening file: " std::term::ewrite
+        xtrd(errno) std::term::ewrite_ui_ln
+        exit
+    end
+    xtrd(data) file!
+    
+    file@ mem::PROT_READ mem::mmap_file
+    
+    if xtr(errno) 0 != do
+        "Error memmapping file" std::term::ewrite
+        xtrd(errno) std::term::ewrite_ui_ln
+        exit
+    end
+    xtrd(data) input!
+
+    input@ unpack swap pack(String)
+    
+    "Part 1: " std::term::write
+    dup false part1 std::term::write_ui_ln
+    "Part 2: " std::term::write
+    true part1 std::term::write_ui_ln
+
+    // We'll just assume these succeed, nothing else we can do as
+    // we're exiting
+    input@ mem::free(u8) drop
+    file@ fs::close drop
+end
+
+proc parse_int [String] to [u8] is
+    0 swap
+    while xtr(length) 0> do
+        0 xtr '0'- rot(3<1) 10*+ swap
+        1 std::string::remove_start
+    end
+    drop
+end
+
+proc part1 [String bool] to [u16] is
+    const MAX_RED [u8] is 12 end
+    const MAX_GREEN [u8] is 13 end
+    const MAX_BLUE [u8] is 14 end
+
+    memory is_part2 is bool end
+    memory id is u8 end
+    memory red is u8 end
+    memory green is u8 end
+    memory blue is u8 end
+    memory total is u16 end
+    is_part2!
+    0 0 id! total!
+
+    // [data]
+
+    while xtr(length) 0> do
+        0 red! 0 green! 0 blue!
+        '\n' std::string::split_front unpack rot(3<1)
+        // [data, cur_line, split]
+
+        if not do
+            // We didn't split, so the current line is in data.
+            drop "" swap
+        end
+
+        // Skip "Game "
+        "Game " xtrd(length) std::string::remove_start
+        ':' std::string::split_front
+        unpack rot(3<1)
+        // [data, plays, id, split]
+        if not do
+            // We didn't split for some reason
+            "Error: Failed to split on colon" std::term::ewriteln exit
+        end
+        // [data, plays, id]
+
+        parse_int id!
+        1 std::string::remove_start
+        // [data, plays]
+
+        // Play parse loop
+        while xtr(length) 0> do
+                ';' std::string::split_front unpack rot(3<1)
+                // [.., plays, cur_play, split]
+
+                if not do
+                    // We didn't split, so the current play is in plays.
+                    drop "" swap
+                end
+
+                while xtr(length) 0> do
+                    ',' std::string::split_front unpack rot(3<1)
+                    // [.., play, cur_count, split]
+
+                    if not do
+                        // We didn't split, so the current count is in play.
+                        drop "" swap
+                    end
+
+                    // Need to trim off the count
+                    ' ' std::string::split_front unpack rot(3<1)
+                    if not do
+                        "Count not found!!" std::term::ewriteln exit
+                    end
+
+                    parse_int swap
+                    // dup std::term::ewrite ": " std::term::ewrite
+                    
+                    0 xtrd
+                    if dup 'r'= do
+                        drop
+                        // "red" std::term::ewriteln
+                        red@ if dup(2)< do swap drop else drop end
+                        red
+                    elif 'g'= do
+                        // "green" std::term::ewriteln
+                        green@ if dup(2)< do swap drop else drop end
+                        green
+                    else 
+                        // "blue" std::term::ewriteln
+                        blue@ if dup(2)< do swap drop else drop end
+                        blue
+                    end
+                    !
+
+                    std::string::trim
+                end
+                drop
+                std::string::trim
+        end
+        drop
+        if is_part2@ not do
+            if red@ MAX_RED<= green@ MAX_GREEN<= and blue@ MAX_BLUE<= and do
+                total@ id@+ total!
+            end
+        else
+            red@ green@ blue@ cast(u16) ** total@ + total!
+        end
+
+        std::string::trim
+    end
+
+    drop
+    total@
+end
